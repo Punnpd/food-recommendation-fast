@@ -16,24 +16,18 @@ def create_user_state(db: Session, user_state: schemas.UserStateCreate):
     db.refresh(db_user_state)
     return db_user_state
 
-def update_user_state_by_line_id(db:Session, line_id: str, state: int):
-    """Update user state by LINE ID"""
+def update_user_state_by_line_id(db:Session, line_id: str, state: str):
+    """
+    Update user state by LINE ID
+    None -> registered -> recommendation_sent -> menu_recognized -> image_categorized -> registered -> ...
+    """
     
-    result = (
-        db.query(
-            models.UserState
-        )
-        .filter(
-            models.UserState.line_id == line_id
-        )
-        .first()
-        .update(
-            {models.UserState.state: state},
-            {models.UserState.update_at: func.now()}
-        )
-    )
+    user_state = db.query(models.UserState).filter(models.UserState.line_id == line_id).first()
+    if user_state:
+        user_state.state = state
+        db.commit()
 
-    return result
+    return user_state
 
 # User
 def get_user(db: Session, user_id: int):
@@ -67,3 +61,15 @@ def create_user(db: Session, user: schemas.UserCreate):
     db_user_features = crud.create_multiple_user_features(db, schemas.UserMultipleFeatuerCreate(user_id=db_user.id, feature_ids=user.feature_ids))
 
     return db_user
+
+def update_user_by_line_id(db: Session, weight: float, height: float, line_id: str):
+    """Update user by LINE user ID."""
+    
+    user = db.query(models.User).filter(models.User.line_id == line_id).first()
+    if user:
+        user.weight = weight
+        user.height = height
+        db.commit()
+
+    return user
+    

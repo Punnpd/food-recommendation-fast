@@ -14,9 +14,10 @@ def get_order_by_user_id(db: Session, user_id: int):
 
 def get_daily_summary(db: Session, user_id: int):
     
-    # Get start of day
-    start_of_day = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    start_of_day = start_of_day - timedelta(hours=7) # Convert to UTC
+    # Get start of day    
+    current_time_utc = datetime.utcnow()
+    current_time_gmt_7 = current_time_utc + timedelta(hours=7)
+    start_of_day = current_time_gmt_7.replace(hour=0, minute=0, second=0, microsecond=0)
     
     # Query nutrition summary since start of day
     query_result = (
@@ -37,6 +38,22 @@ def get_daily_summary(db: Session, user_id: int):
         .all()
     )
     
+    return query_result
+
+def get_top_menus_by_user(db: Session, user_id: int, top_n: int):
+    query_result = (
+        db.query(
+            models.Menu.name,
+            models.Menu.calorie,
+            func.count(models.Order.menu_id).label('count_menu_id')
+        )
+        .filter(models.Order.user_id == user_id)
+        .group_by(models.Menu.name, models.Menu.calorie)
+        .order_by(func.count(models.Order.menu_id).desc())
+        .join(models.Menu, models.Order.menu_id == models.Menu.id)
+        .limit(top_n)
+        .all()
+    )
     return query_result
 
 def get_orders(db: Session):

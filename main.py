@@ -14,13 +14,14 @@ from routers.menu import menu
 from routers.order import order
 from routers.feature import feature
 from routers.user_feature import user_feature
+from routers.recommend import recommend
 
 # Initiate Fast App
 app = FastAPI()
 
 # CORS
 origins = [
-    "https://fd9d-2405-9800-bc00-2f1-5159-5c25-713-97e7.ngrok-free.app"
+    "https://62d4-2405-9800-bc00-2f1-d4ca-7e6d-7688-a19b.ngrok-free.app"
 ]
 
 app.add_middleware(
@@ -38,6 +39,8 @@ app.include_router(menu.router)
 app.include_router(order.router)
 app.include_router(feature.router)
 app.include_router(user_feature.router)
+app.include_router(recommend.router)
+
 
 @app.get('/')
 async def root():
@@ -55,7 +58,6 @@ async def read_item(request: Request):
         </body>
     </html>
     """
-
 
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)
